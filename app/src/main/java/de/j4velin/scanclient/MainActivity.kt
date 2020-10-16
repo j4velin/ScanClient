@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.text.InputType
 import android.view.KeyEvent
@@ -18,6 +19,7 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         setContentView(R.layout.activity_main)
         findViewById<EditText>(R.id.ip).setOnClickListener {
             val currentIp = it as EditText
