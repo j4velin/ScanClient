@@ -20,8 +20,11 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        val preferences = getSharedPreferences("prefs", Context.MODE_PRIVATE)
         setContentView(R.layout.activity_main)
-        findViewById<EditText>(R.id.ip).setOnClickListener {
+        val view = findViewById<EditText>(R.id.ip)
+        view.setText(preferences.getString("ip", "192.168.178.24"))
+        view.setOnClickListener {
             val currentIp = it as EditText
             val newIp = EditText(this)
             newIp.inputType = InputType.TYPE_CLASS_PHONE
@@ -31,6 +34,7 @@ class MainActivity : Activity() {
                     android.R.string.ok
                 ) { dialog, _ ->
                     currentIp.text = newIp.text
+                    preferences.edit().putString("ip", newIp.text.toString()).apply()
                     dialog?.dismiss()
                 }
                 .create().show()
@@ -48,7 +52,7 @@ class MainActivity : Activity() {
         pages.setOnKeyListener(object : View.OnKeyListener {
             override fun onKey(v: View?, keyCode: Int, event: KeyEvent): Boolean {
                 if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
-                    scan(findViewById(R.id.scan))
+                    scan()
                     return true
                 }
                 return false
@@ -56,7 +60,7 @@ class MainActivity : Activity() {
         })
     }
 
-    fun scan(view: View) {
+    fun scan() {
         val progressDialog = ProgressDialog.show(this, "Scanning", "Please wait...", true, false)
         Thread {
             val result = try {
