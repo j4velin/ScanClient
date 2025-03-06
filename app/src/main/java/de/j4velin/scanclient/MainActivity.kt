@@ -52,7 +52,7 @@ class MainActivity : Activity() {
         pages.setOnKeyListener(object : View.OnKeyListener {
             override fun onKey(v: View?, keyCode: Int, event: KeyEvent): Boolean {
                 if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
-                    scan()
+                    scan(findViewById(R.id.scan))
                     return true
                 }
                 return false
@@ -60,7 +60,7 @@ class MainActivity : Activity() {
         })
     }
 
-    fun scan() {
+    fun scan(view: View) {
         val progressDialog = ProgressDialog.show(this, "Scanning", "Please wait...", true, false)
         Thread {
             val result = try {
