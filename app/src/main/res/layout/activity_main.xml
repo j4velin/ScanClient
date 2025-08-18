@@ -41,11 +41,26 @@
         android:textColor="@color/colorAccent"
         android:textStyle="bold" />
 
+    <Button
+        android:id="@+id/next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/pages"
+        android:layout_below="@id/scan"
+        android:background="@color/colorPrimary"
+        android:onClick="next"
+        android:layout_marginTop="10dp"
+        android:text="Next page"
+        android:visibility="invisible"
+        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+        android:textColor="@color/colorAccent"
+        android:textStyle="bold" />
+
     <TextView
         android:id="@+id/text2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/text"
+        android:layout_below="@id/next"
         android:layout_marginTop="50dp"
         android:text="ScanServer IP:"
         android:textAppearance="@android:style/TextAppearance.Material.Small" />
