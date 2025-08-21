@@ -68,16 +68,17 @@ class MainActivity : Activity() {
     fun scan(view: View) {
         view.isVisible = false
         val progressDialog: ProgressDialog?
-        currentPage = 1
         totalPages = findViewById<EditText>(R.id.pages).text.toString().toInt()
         if (totalPages > 1) {
             progressDialog = null
+            currentPage = 0 // first scan happen when clicking on the next button
             findViewById<Button>(R.id.next).apply {
                 isVisible = true
                 text = "$currentPage / $totalPages"
             }
             Toast.makeText(this, "Scanning...", Toast.LENGTH_SHORT).show()
         } else {
+            currentPage = 1
             progressDialog = ProgressDialog.show(this, "Scanning", "Please wait...", true, false)
         }
         Thread {
@@ -106,9 +107,9 @@ class MainActivity : Activity() {
                 "Error trying to scan"
             }
             currentPage++
-            (view as Button).text = "$currentPage / $totalPages"
             runOnUiThread {
                 Toast.makeText(this, result, Toast.LENGTH_SHORT).show()
+                (view as Button).text = "$currentPage / $totalPages"
                 if (currentPage == totalPages) {
                     findViewById<View>(R.id.scan).isVisible = true
                 } else {
