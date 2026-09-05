@@ -94,6 +94,9 @@ class MainActivity : Activity() {
                 if (currentPage == totalPages) view.isVisible = true
             }
         }.start()
+        if (totalPages > 1) {
+            next(view)
+        }
     }
 
     fun next(view: View) {
