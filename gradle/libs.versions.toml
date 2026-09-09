@@ -1,0 +1,41 @@
+[versions]
+agp             = "9.4.0"
+compileSdk      = "37"
+minSdk          = "26"
+# 36 rather than 37: the API 37 behaviour changes have not been walked through on a device yet.
+# Compiling against 37 already surfaces the new deprecations; opting into its runtime behaviour is
+# a separate decision.
+targetSdk       = "36"
+
+activity        = "1.13.0"
+core            = "1.19.0"
+coroutines      = "1.11.0"
+datastore       = "1.2.1"
+lifecycle       = "2.11.0"
+
+# The compose compiler plugin has to match the Kotlin compiler AGP 9.4 bundles - 2.2.10, not the
+# newest release. See the same note in wallpaperChanger: a newer one builds, but its group-mapping
+# task then asks for org.jetbrains.kotlin:compose-group-mapping at the compiler's version, which
+# does not exist before 2.3.0, and the release build fails to resolve it.
+kotlin          = "2.2.10"
+composeBom      = "2026.08.00"
+
+[libraries]
+core            = { module = "androidx.core:core-ktx",               version.ref = "core" }
+coroutines      = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+datastore       = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+
+# Compose. Versions come from the BOM below.
+compose-bom     = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+compose-ui      = { module = "androidx.compose.ui:ui" }
+compose-graphics = { module = "androidx.compose.ui:ui-graphics" }
+compose-material3 = { module = "androidx.compose.material3:material3" }
+compose-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+compose-tooling = { module = "androidx.compose.ui:ui-tooling" }
+compose-activity = { module = "androidx.activity:activity-compose", version.ref = "activity" }
+compose-lifecycleRuntime = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+compose-lifecycleViewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

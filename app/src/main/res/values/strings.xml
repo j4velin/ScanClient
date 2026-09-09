@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">ScanClient</string>
+
+    <string name="pages_label">Number of pages:</string>
+    <string name="scan">Scan</string>
+    <string name="scanning">Scanning…</string>
+    <string name="next_page">Next page</string>
+    <string name="page_progress">%1$d / %2$d</string>
+
+    <string name="server_ip_label">ScanServer IP:</string>
+    <string name="ip_dialog_title">New IP</string>
 </resources>
