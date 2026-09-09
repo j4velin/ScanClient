@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -21,6 +22,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,6 +58,7 @@ fun ScanScreen(viewModel: ScanViewModel = viewModel(factory = ScanViewModel.Fact
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScanScreen(
     state: ScanUiState,
@@ -74,7 +78,21 @@ fun ScanScreen(
         onMessageShown()
     }
 
-    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { contentPadding ->
+    Scaffold(
+        // The View theme was Theme.Material.Light.DarkActionBar, so the app had a titled,
+        // colour-filled bar. themes.xml is NoActionBar now because Compose owns the window, which
+        // is what dropped it; this puts it back rather than leaving the screen headerless.
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ),
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { contentPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

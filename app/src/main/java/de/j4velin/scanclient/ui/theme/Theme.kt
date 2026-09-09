@@ -36,14 +36,17 @@ private val DarkColorScheme = darkColorScheme(
 /**
  * The app's Compose theme, replacing `Theme.Material.Light.DarkActionBar` in styles.xml.
  *
- * Two things the View theme could not do: it follows the system dark setting instead of being
- * light-only, and on Android 12+ it takes the wallpaper's colours. The schemes above are the
- * fallback for older devices and for anyone who turns dynamic colour off.
+ * The schemes above are the app's own, built from the View theme's #455A64 / #FF5722, and they
+ * are what the app uses: [dynamicColor] defaults to off, because taking the wallpaper's colours
+ * on Android 12+ meant the app no longer looked like itself.
+ *
+ * The one thing kept from that rewrite is that this follows the system dark setting, which the
+ * light-only View theme could not.
  */
 @Composable
 fun ScanClientTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
