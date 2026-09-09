@@ -3,15 +3,20 @@ package de.j4velin.scanclient.data
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
 /**
  * The PiDMS scan server's HTTP interface.
  *
- * Two endpoints, both plain GETs returning a human-readable status line that the UI shows as-is:
- * `/<pages>` opens a job for that many pages, `/next` scans the next sheet into the open job. A
- * single-page scan is just a job of one, which the server completes without a `/next`.
+ * Two endpoints, both plain GETs: `/<pages>` opens a job for that many pages and answers as soon
+ * as it is open, `/next` scans the next sheet into it. A single-page scan is just a job of one,
+ * which the server completes without a `/next` - so that one request lasts as long as the scan
+ * does, and is the only one [READ_TIMEOUT_MS] is really there for.
+ *
+ * Every reply is one human-readable line the UI shows as-is, refusals included ("a scan job is
+ * already running", "no scan job has been started"), which is why [get] reads the error body.
  */
 class ScanRepository {
 
@@ -36,7 +41,13 @@ class ScanRepository {
                     readTimeout = READ_TIMEOUT_MS
                 }
             try {
-                Result.success(connection.inputStream.bufferedReader().use { it.readText() }.trim())
+                val ok = connection.responseCode in 200..299
+                // On a refusal the server's explanation is on errorStream; reading inputStream
+                // would throw instead, leaving the user with a bare "FileNotFoundException".
+                val body = (if (ok) connection.inputStream else connection.errorStream)
+                    ?.bufferedReader()?.use { it.readText() }?.trim().orEmpty()
+                if (ok) Result.success(body)
+                else Result.failure(IOException(body.ifEmpty { "HTTP ${connection.responseCode}" }))
             } finally {
                 connection.disconnect()
             }
