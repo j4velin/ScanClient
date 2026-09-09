@@ -75,16 +75,13 @@ class ScanViewModel(
     }
 
     /**
-     * Opens a job for the entered number of pages.
+     * Opens a job for the entered number of pages, and for a multi-page job scans the first sheet.
      *
-     * For a multi-page job this then scans the first sheet, which is what the View version did -
-     * except that it fired both requests on separate threads at the same moment and let them race.
-     * Here the second waits for the first.
-     *
-     * Whether that first [ScanRepository.scanNextPage] belongs here at all depends on the server:
-     * it is right if `GET /<pages>` only opens the job, and one scan too many if opening a job
-     * already scans the first sheet. See the note in the migration summary - deleting the marked
-     * line below is the whole change if it turns out to be the latter.
+     * Ordering the two requests is both safe and necessary: `GET /<pages>` answers as soon as the
+     * job exists, and a `/next` arriving before that is refused rather than quietly dropped. This
+     * needs a scan server that returns from `/<pages>` on start. The older one returned on
+     * completion, which nothing can wait for - the job only advances on the `/next` calls that
+     * waiting for it withholds - and the View version only worked by firing both at once.
      */
     fun onScan() = viewModelScope.launch {
         val state = localState.value
@@ -97,15 +94,19 @@ class ScanViewModel(
 
         // Read through the repository rather than off uiState: uiState is a WhileSubscribed
         // stateIn, so its value is only guaranteed current while the screen is collecting it.
-        val result = scanRepository.startJob(settingsRepository.ip.first(), pages)
+        val ip = settingsRepository.ip.first()
+
+        val result = scanRepository.startJob(ip, pages)
         result.onFailure { return@launch fail(it) }
-        localState.update { it.copy(message = result.getOrNull()) }
 
         if (pages == 1) {
-            // A job of one completes on the server without a /next, as it always has.
+            // A job of one is completed by the server without a /next, as it always has been, so
+            // its reply is the outcome of the scan rather than an acknowledgement.
+            localState.update { it.copy(message = result.getOrNull()) }
             finishOrAwait(currentPage = 1)
         } else {
-            scanPage()  // <- the first sheet of a multi-page job
+            // The reply only says the job is open. Its first sheet is a /next like any other.
+            scanPage()
         }
     }
 
