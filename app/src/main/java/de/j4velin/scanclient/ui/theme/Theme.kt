@@ -20,17 +20,36 @@ private val LightColorScheme = lightColorScheme(
     onSecondary = Color.White,
     secondaryContainer = DeepOrange200,
     onSecondaryContainer = DeepOrange900,
+    background = Grey50,
+    onBackground = Grey900,
+    surface = Grey50,
+    onSurface = Grey900,
+    surfaceVariant = Grey200,
+    onSurfaceVariant = Grey600,
+    // Dialogs. M3 floats them on a tinted surfaceContainerHigh; the platform ones were plain white.
+    surfaceContainer = Color.White,
+    surfaceContainerHigh = Color.White,
 )
 
+// Same blue grey and same orange as the light one, on Material's dark greys rather than M3's
+// near-black. The app's two colours are what makes it recognisable; only the ground changes.
 private val DarkColorScheme = darkColorScheme(
-    primary = BlueGrey200,
-    onPrimary = BlueGrey900,
+    primary = BlueGrey700,
+    onPrimary = Color.White,
     primaryContainer = BlueGrey700,
     onPrimaryContainer = BlueGrey100,
-    secondary = DeepOrange200,
-    onSecondary = DeepOrange900,
+    secondary = DeepOrange500,
+    onSecondary = Color.White,
     secondaryContainer = DeepOrange900,
     onSecondaryContainer = DeepOrange200,
+    background = Grey850,
+    onBackground = Grey50,
+    surface = Grey850,
+    onSurface = Grey50,
+    surfaceVariant = Grey800,
+    onSurfaceVariant = Grey400,
+    surfaceContainer = Grey800,
+    surfaceContainerHigh = Grey800,
 )
 
 /**
@@ -40,8 +59,9 @@ private val DarkColorScheme = darkColorScheme(
  * are what the app uses: [dynamicColor] defaults to off, because taking the wallpaper's colours
  * on Android 12+ meant the app no longer looked like itself.
  *
- * The one thing kept from that rewrite is that this follows the system dark setting, which the
- * light-only View theme could not.
+ * The one thing this does that the light-only View theme could not is follow the system dark
+ * setting. Both schemes are built from the same two colours and differ only in their neutrals, so
+ * the dark one is the same app on a dark grey ground rather than a different-looking app.
  */
 @Composable
 fun ScanClientTheme(

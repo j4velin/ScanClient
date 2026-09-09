@@ -1,5 +1,6 @@
 package de.j4velin.scanclient.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +24,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -33,11 +37,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -86,8 +96,8 @@ fun ScanScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
             )
         },
@@ -114,7 +124,7 @@ fun ScanScreen(
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(40.dp))
 
             ServerIpRow(ip = state.ip, onIpChange = onIpChange)
         }
@@ -141,14 +151,25 @@ private fun PagesRow(
             text = stringResource(R.string.pages_label),
             style = MaterialTheme.typography.bodyLarge,
         )
-        OutlinedTextField(
+        // Underlined and transparent rather than boxed, which is what the View EditText was:
+        // an M3 OutlinedTextField draws a full border the old screen never had.
+        TextField(
             value = state.pagesInput,
             onValueChange = onPagesInputChange,
             modifier = Modifier
-                .width(88.dp)
+                .width(80.dp)
                 .focusRequester(focusRequester),
             enabled = state.phase == ScanPhase.Idle,
             singleLine = true,
+            textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
+                // colorAccent, where the View theme put the focused underline and the cursor.
+                focusedIndicatorColor = MaterialTheme.colorScheme.secondary,
+                cursorColor = MaterialTheme.colorScheme.secondary,
+            ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Done,
@@ -161,8 +182,18 @@ private fun PagesRow(
             // block the whole screen for a job that only needs the buttons disabled.
             CircularProgressIndicator(Modifier.size(24.dp))
         } else {
-            Button(onClick = onScan, enabled = state.canScan) {
-                Text(stringResource(R.string.scan))
+            // colorPrimary ground, bold colorAccent label, square: the View button set all
+            // three by hand, and an M3 filled button defaults to none of them.
+            Button(
+                onClick = onScan,
+                enabled = state.canScan,
+                shape = RectangleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.secondary,
+                ),
+            ) {
+                Text(stringResource(R.string.scan), fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -180,9 +211,26 @@ private fun ServerIpRow(ip: String, onIpChange: (String) -> Unit) {
             text = stringResource(R.string.server_ip_label),
             style = MaterialTheme.typography.bodyMedium,
         )
-        TextButton(onClick = { editing = true }) {
-            Text(text = ip, style = MaterialTheme.typography.bodyMedium)
-        }
+        // The View EditText was focusable="false" with a click listener - it looked like a
+        // field and behaved like a button, which a TextButton's pill does not convey.
+        val underline = MaterialTheme.colorScheme.onSurfaceVariant
+        Text(
+            text = ip,
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .clickable { editing = true }
+                .width(200.dp)
+                .drawBehind {
+                    drawLine(
+                        color = underline,
+                        start = Offset(0f, size.height),
+                        end = Offset(size.width, size.height),
+                        strokeWidth = 1.dp.toPx(),
+                    )
+                }
+                .padding(bottom = 6.dp),
+        )
     }
 
     if (editing) {
@@ -220,14 +268,26 @@ private fun IpDialog(current: String, onDismiss: () -> Unit, onConfirm: (String)
             )
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(draft) }) {
+            // colorAccent, which is what the platform theme tinted dialog buttons with. Left at
+            // the M3 default they take the primary, which is unreadable on the dark scheme's grey.
+            TextButton(
+                onClick = { onConfirm(draft) },
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.secondary
+                ),
+            ) {
                 Text(stringResource(android.R.string.ok))
             }
         },
         // The View dialog had no way out but the back button, which left the OK path as the only
         // visible one.
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.secondary
+                ),
+            ) {
                 Text(stringResource(android.R.string.cancel))
             }
         },
