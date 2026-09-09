@@ -1,0 +1,11 @@
+<resources>
+
+    <!--
+      Only the window's appearance before Compose draws its first frame; everything after that is
+      MaterialTheme in ui/theme/Theme.kt. NoActionBar because the Compose screen provides its own
+      chrome, and a DayNight pair (see values-night) so a dark-mode launch does not flash white -
+      the old AppTheme parented onto Theme.Material.Light and always did.
+    -->
+    <style name="Theme.ScanClient" parent="android:Theme.Material.Light.NoActionBar" />
+
+</resources>
